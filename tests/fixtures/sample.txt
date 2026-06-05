@@ -1,0 +1,23 @@
+ARIA System Documentation
+
+ARIA stands for Agentic Reasoning and Intelligence Architecture.
+It is a fully autonomous AI assistant built entirely on free LLM APIs.
+
+Core Features:
+ARIA supports web search using Tavily and DuckDuckGo as a fallback.
+The document retrieval system uses hybrid search combining dense and sparse methods.
+Code execution is sandboxed using RestrictedPython for safety.
+Long-term memory persists user preferences and facts across sessions.
+The model router automatically switches between providers when rate limits are hit.
+
+Architecture:
+The system uses LangGraph for stateful multi-step agent reasoning.
+ChromaDB stores vector embeddings for semantic search.
+SQLite stores session history, memory metadata, and analytics.
+FastAPI serves the backend API on port 8000.
+Streamlit provides the chat interface on port 8501.
+
+Supported LLM Providers:
+Google AI Studio provides Gemini 1.5 Flash and Gemini 1.5 Pro.
+Groq provides LLaMA 3 and DeepSeek Coder models.
+Together AI and Cohere serve as additional fallback providers.

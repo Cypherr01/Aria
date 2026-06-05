@@ -1,0 +1,151 @@
+# ARIA — Reference Configuration
+# All values here are defaults; override any key via environment variables
+# using double-underscore notation, e.g. API__PORT=9000
+
+# ── MODEL TIER SYSTEM (7 tiers, all with ordered fallback chains) ─────────────
+#
+# LLM TIERS — resolved via call_with_rotation()
+#   REASONING  : synthesis, planning, reflection, research decomp/synthesis
+#                User's UI selection is promoted to chain[0]. PRIMARY == REASONING.
+#   SPEED      : intent classification, follow-ups, relevance scoring,
+#                memory categorization, episodic extraction, structured output
+#   CODE       : Python code generation (code_agent only)
+#   SUMMARIZATION: working memory compression, summarizer tool
+#   SAFETY     : content filter — always reliable, never experimental models
+#
+# EMBEDDING TIER — resolved via router.embed() → OpenRouter API
+#   No local SentenceTransformer. Chain tried in order on failure.
+#
+# RERANKING TIER — resolved via router.rerank() → Cohere Rerank API
+#   No local CrossEncoder. Chain tried in order on failure.
+# ─────────────────────────────────────────────────────────────────────────────
+model_tiers:
+  # LLM TIERS
+  reasoning_chain:
+    - "command-a-plus-05-2026"
+    - "command-a-reasoning-08-2025"
+    - "llama-3.3-70b-versatile"
+    - "command-a-03-2025"
+    - "command-r-plus-08-2024"
+    - "qwen/qwen3-32b"
+  speed_chain:
+    - "llama-3.1-8b-instant"
+    - "command-r7b-12-2024"
+    - "c4ai-aya-expanse-32b"
+    - "meta-llama/llama-4-scout-17b-16e-instruct"
+  code_chain:
+    - "qwen/qwen3-32b"
+    - "llama-3.3-70b-versatile"
+    - "command-a-plus-05-2026"
+    - "command-a-03-2025"
+  summarization_chain:
+    - "command-a-plus-05-2026"
+    - "command-r-plus-08-2024"
+    - "c4ai-aya-expanse-32b"
+    - "llama-3.3-70b-versatile"
+  safety_chain:
+    - "llama-3.1-8b-instant"
+    - "command-r7b-12-2024"
+    - "llama-3.3-70b-versatile"
+  # EMBEDDING TIER — OpenRouter API, no local SentenceTransformer
+  embedding_chain:
+    - "qwen/qwen3-embedding-8b"
+    - "qwen/qwen3-embedding-4b"
+    - "perplexity/pplx-embed-v1-4b"
+    - "baai/bge-large-en-v1.5"
+    - "intfloat/e5-large-v2"
+    - "thenlper/gte-large"
+    - "sentence-transformers/all-mpnet-base-v2"
+    - "baai/bge-base-en-v1.5"
+  # RERANKING TIER — Cohere Rerank API, no local CrossEncoder
+  reranking_chain:
+    - "cohere/rerank-4-pro"
+    - "cohere/rerank-v3.5"
+    - "cohere/rerank-4-fast"
+  primary_model_default: "command-a-plus-05-2026"
+
+model_routing:
+  min_health_score: 0.5
+  failure_threshold: 3
+  cooldown_minutes: 60
+  budget_threshold: 0.95
+  backoff_base_seconds: 2
+  max_retries_before_rotation: 3
+
+memory:
+  working_memory_token_threshold: 0.80
+  summarize_turns: 10
+  episodic_top_k: 10
+  min_importance_to_retrieve: 0.15
+  prune_threshold: 0.10
+  prune_after_days: 30
+  decay_rate_preference: 0.003
+  decay_rate_fact: 0.005
+  decay_rate_context: 0.010
+
+rag:
+  target_chunk_tokens: 400
+  chunk_overlap_tokens: 50
+  dense_top_k: 20
+  sparse_top_k: 20
+  final_top_k: 8
+  max_context_tokens: 4000
+  max_document_size_mb: 50
+
+research:
+  max_sub_questions: 4
+  max_results_per_sub_question: 5
+  max_sources: 10
+  dedup_similarity_threshold: 0.90
+
+reflection:
+  pass_threshold: 0.70
+  max_retries: 2
+  run_async_reflection: true
+
+responsible_ai:
+  hallucination_threshold: 0.60
+  remove_hallucinated_claims: true
+  pii_detection_enabled: true
+  injection_detection_enabled: true
+  injection_similarity_threshold: 0.85
+  content_filtering_enabled: true
+  include_citations: true
+
+tools:
+  web_search_enabled: true
+  deep_research_enabled: true
+  document_rag_enabled: true
+  code_interpreter_enabled: true
+  memory_tool_enabled: true
+  summarizer_enabled: true
+  structured_output_enabled: true
+  calculator_enabled: true
+  default_tool_timeout_sec: 30
+  code_execution_timeout_sec: 15
+  web_search_max_results: 5
+
+code_agent:
+  max_execution_retries: 3
+  sandbox_memory_limit_mb: 128
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  rate_limit_per_minute: 60
+  upload_rate_limit_per_hour: 10
+
+observability:
+  log_level: "INFO"
+  debug_mode: false
+  langsmith_enabled: true
+  structured_logging_enabled: true
+  analytics_retention_days: 90
+
+ui:
+  title: "ARIA — Agentic AI Assistant"
+  show_follow_up_suggestions: true
+  show_thinking_trace: true
+  show_model_indicator: true
+  conversation_page_size: 20
