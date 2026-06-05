@@ -270,6 +270,25 @@ class ModelRouter:
                 f"API key not configured: set the {model.api_key_env_var!r} environment variable."
             )
 
+        if model.provider == "openrouter":
+            from langchain_openai import ChatOpenAI
+            return ChatOpenAI(
+                model=model.name,
+                api_key=api_key,
+                base_url="https://openrouter.ai/api/v1",
+                temperature=temperature,
+                max_tokens=model.max_output_tokens,
+            )
+
+        if model.provider == "cohere":
+            from models.custom_cohere import CohereV2ChatModel
+            return CohereV2ChatModel(
+                model=model.name,
+                api_key=api_key,
+                temperature=temperature,
+                max_tokens=model.max_output_tokens,
+            )
+
         from langchain.chat_models import init_chat_model
         
         # init_chat_model maps provider to the correct integration package automatically

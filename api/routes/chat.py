@@ -122,7 +122,7 @@ async def chat(
 
     # 8. Resolve primary_model_resolved for response auditability
     cfg = get_config().model_tiers
-    primary_chain = list(cfg.primary_chain)
+    primary_chain = list(cfg.reasoning_chain)
     if body.primary_model and body.primary_model in primary_chain:
         primary_model_resolved = body.primary_model
     else:
